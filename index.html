@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CE Command">
+  <meta name="theme-color" content="#1B2838">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231B2838' width='100' height='100'/><text y='.9em' x='50%' text-anchor='middle' font-size='80'>⚡</text></svg>">
+  <title>Charlie Ebersol | Command Center</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
+    :root {
+      --navy: #1B2838;
+      --navy-light: #243447;
+      --gold: #C4A052;
+      --gold-dim: rgba(196, 160, 82, 0.3);
+      --cream: #FAF8F5;
+      --charcoal: #2A2A2A;
+      --soft-gray: #8A8A8A;
+      --success: #16A34A;
+      --warning: #D97706;
+      --danger: #DC2626;
+    }
+    
+    html, body {
+      font-family: 'Montserrat', system-ui, sans-serif;
+      background: var(--cream);
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      color: var(--charcoal);
+      font-size: 14px;
+      line-height: 1.6;
+      overscroll-behavior: none;
+    }
+    
+    /* LOGIN SCREEN */
+    .login-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    
+    .login-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--gold-dim);
+      padding: 48px 40px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+    
+    .login-logo {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 32px;
+      font-weight: 300;
+      color: var(--gold);
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    
+    .login-subtitle {
+      color: rgba(250, 248, 245, 0.5);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+    
+    .login-input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--gold-dim);
+      padding: 16px 20px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 16px;
+      color: var(--cream);
+      text-align: center;
+      letter-spacing: 4px;
+      margin-bottom: 16px;
+      transition: border-color 0.3s ease;
+    }
+    
+    .login-input:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+    
+    .login-input::placeholder {
+      color: rgba(250, 248, 245, 0.3);
+      letter-spacing: 2px;
+    }
+    
+    .remember-me {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 24px;
+      color: rgba(250, 248, 245, 0.6);
+      font-size: 12px;
+    }
+    
+    .remember-me input {
+      accent-color: var(--gold);
+      width: 16px;
+      height: 16px;
+    }
+    
+    .login-btn {
+      width: 100%;
+      background: var(--gold);
+      border: none;
+      color: var(--navy);
+      padding: 16px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .login-btn:hover {
+      background: #D4B062;
+    }
+    
+    .login-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .login-error {
+      color: #F87171;
+      font-size: 12px;
+      margin-top: 16px;
+      display: none;
+    }
+    
+    /* MAIN APP */
+    .app { display: none; }
+    .app.visible { display: block; }
+    
+    /* HEADER */
+    .header {
+      background: var(--navy);
+      padding: 16px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .logo {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 20px;
+      font-weight: 300;
+      color: var(--gold);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+    
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .sync-status {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+    
+    .sync-status.syncing {
+      background: var(--warning);
+      animation: pulse 1s infinite;
+    }
+    
+    .sync-status.error {
+      background: var(--danger);
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .logout-btn {
+      background: transparent;
+      border: 1px solid var(--gold-dim);
+      color: var(--gold);
+      padding: 8px 12px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+    
+    /* NAVIGATION */
+    .nav {
+      background: var(--navy);
+      padding: 0 16px;
+      display: flex;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    
+    .nav::-webkit-scrollbar { display: none; }
+    
+    .nav-btn {
+      flex-shrink: 0;
+      padding: 14px 18px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: rgba(250, 248, 245, 0.5);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    
+    .nav-btn.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+    
+    /* CONTAINER */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 16px;
+      padding-bottom: 100px;
+    }
+    
+    /* VIEWS */
+    .view { display: none; }
+    .view.active { display: block; }
+    
+    /* SECTION */
+    .section-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 24px;
+      font-weight: 400;
+      color: var(--navy);
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
+    
+    /* BIG ROCKS SUMMARY */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    
+    .summary-card {
+      background: var(--navy);
+      padding: 20px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .summary-card:active {
+      transform: scale(0.98);
+    }
+    
+    .summary-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+    
+    .summary-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 14px;
+      color: var(--cream);
+      margin-bottom: 8px;
+    }
+    
+    .summary-progress {
+      height: 3px;
+      background: rgba(250, 248, 245, 0.2);
+      margin-bottom: 8px;
+    }
+    
+    .summary-progress-fill {
+      height: 100%;
+      background: var(--gold);
+      transition: width 0.5s ease;
+    }
+    
+    .summary-stat {
+      font-size: 11px;
+      color: var(--gold);
+      font-weight: 500;
+    }
+    
+    /* GOAL DETAIL CARDS */
+    .goal-card {
+      background: white;
+      border: 1px solid rgba(27, 40, 56, 0.1);
+      margin-bottom: 24px;
+    }
+    
+    .goal-header {
+      background: var(--navy);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .goal-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 20px;
+      color: var(--cream);
+    }
+    
+    .goal-badge {
+      background: var(--gold);
+      color: var(--navy);
+      padding: 4px 12px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+    
+    .goal-body {
+      padding: 20px;
+    }
+    
+    .goal-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .goal-stat {
+      text-align: center;
+      padding: 16px 12px;
+      background: var(--cream);
+    }
+    
+    .goal-stat-value {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 28px;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+    
+    .goal-stat-label {
+      font-size: 10px;
+      color: var(--soft-gray);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    
+    .goal-progress-bar {
+      height: 8px;
+      background: rgba(196, 160, 82, 0.2);
+      margin-bottom: 8px;
+    }
+    
+    .goal-progress-fill {
+      height: 100%;
+      background: var(--gold);
+      transition: width 0.5s ease;
+    }
+    
+    .goal-progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--soft-gray);
+    }
+    
+    /* MONTHLY PROGRESS */
+    .monthly-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 20px;
+    }
+    
+    .month-box {
+      background: var(--cream);
+      padding: 12px 8px;
+      text-align: center;
+    }
+    
+    .month-box.current {
+      border: 2px solid var(--gold);
+    }
+    
+    .month-box.completed {
+      background: rgba(22, 163, 74, 0.1);
+    }
+    
+    .month-name {
+      font-size: 10px;
+      color: var(--soft-gray);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    
+    .month-status {
+      font-size: 16px;
+    }
+    
+    /* CHECKLIST */
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--cream);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .checklist-item:active {
+      background: rgba(196, 160, 82, 0.1);
+    }
+    
+    .checklist-item.completed {
+      background: rgba(22, 163, 74, 0.05);
+    }
+    
+    .checklist-checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--gold-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+    
+    .checklist-item.completed .checklist-checkbox {
+      background: var(--gold);
+      border-color: var(--gold);
+    }
+    
+    .checklist-checkbox::after {
+      content: '✓';
+      color: var(--navy);
+      font-size: 12px;
+      font-weight: bold;
+      opacity: 0;
+    }
+    
+    .checklist-item.completed .checklist-checkbox::after {
+      opacity: 1;
+    }
+    
+    .checklist-label {
+      flex: 1;
+      font-size: 13px;
+    }
+    
+    .checklist-item.completed .checklist-label {
+      color: var(--soft-gray);
+      text-decoration: line-through;
+    }
+    
+    .checklist-category {
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 4px 8px;
+    }
+    
+    .checklist-category.legal { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+    .checklist-category.operations { background: rgba(139, 92, 246, 0.1); color: #7C3AED; }
+    .checklist-category.marketing { background: rgba(59, 130, 246, 0.1); color: #2563EB; }
+    .checklist-category.milestone { background: rgba(22, 163, 74, 0.1); color: var(--success); }
+    
+    /* Weekly Content */
+    .weekly-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--cream);
+      margin-bottom: 8px;
+    }
+    
+    .weekly-label {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .weekly-checks {
+      display: flex;
+      gap: 16px;
+    }
+    
+    .weekly-check {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--soft-gray);
+      cursor: pointer;
+    }
+    
+    .weekly-check input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--gold);
+    }
+    
+    .weekly-item.complete {
+      background: rgba(22, 163, 74, 0.05);
+    }
+    
+    .weekly-item.complete .weekly-label {
+      color: var(--soft-gray);
+      text-decoration: line-through;
+    }
+    
+    /* JOURNAL */
+    .journal-card {
+      background: white;
+      border: 1px solid rgba(27, 40, 56, 0.1);
+      padding: 24px 20px;
+      margin-bottom: 24px;
+    }
+    
+    .journal-date {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 18px;
+      color: var(--navy);
+      margin-bottom: 16px;
+    }
+    
+    .journal-textarea {
+      width: 100%;
+      min-height: 100px;
+      border: 1px solid var(--gold-dim);
+      background: var(--cream);
+      padding: 16px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      color: var(--charcoal);
+      resize: none;
+      margin-bottom: 12px;
+    }
+    
+    .journal-textarea:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+    
+    .journal-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--soft-gray);
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    .journal-btn {
+      width: 100%;
+      background: var(--navy);
+      color: var(--gold);
+      border: none;
+      padding: 16px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+    
+    .journal-btn:active {
+      background: var(--navy-light);
+    }
+    
+    /* JOURNAL HISTORY */
+    .journal-entry {
+      background: white;
+      border: 1px solid rgba(27, 40, 56, 0.1);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    
+    .journal-entry-date {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 16px;
+      color: var(--navy);
+      margin-bottom: 12px;
+    }
+    
+    .journal-entry-content {
+      font-size: 13px;
+      color: var(--charcoal);
+      white-space: pre-wrap;
+      line-height: 1.7;
+    }
+    
+    .journal-entry-feelings {
+      background: var(--cream);
+      border-left: 3px solid var(--gold);
+      padding: 12px 16px;
+      margin-top: 12px;
+      font-size: 13px;
+      font-style: italic;
+    }
+    
+    /* WARNING BOX */
+    .warning-box {
+      background: var(--navy);
+      border-left: 4px solid #DC2626;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    
+    .warning-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 16px;
+      color: #F87171;
+      margin-bottom: 12px;
+    }
+    
+    .warning-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .warning-item {
+      background: rgba(248, 113, 113, 0.1);
+      padding: 6px 12px;
+      font-size: 11px;
+      color: #FCA5A5;
+    }
+    
+    .warning-quote {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(248, 113, 113, 0.2);
+      font-style: italic;
+      color: rgba(252, 165, 165, 0.7);
+      font-size: 12px;
+    }
+    
+    /* SCHEDULE */
+    .schedule-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 20px;
+    }
+    
+    .schedule-block {
+      background: var(--navy);
+      padding: 14px 12px;
+    }
+    
+    .schedule-block.danger {
+      background: #7f1d1d;
+    }
+    
+    .schedule-time {
+      font-size: 11px;
+      color: var(--gold);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    
+    .schedule-block.danger .schedule-time {
+      color: #FCA5A5;
+    }
+    
+    .schedule-activity {
+      font-size: 12px;
+      color: var(--cream);
+    }
+    
+    /* ADD TO HOME SCREEN PROMPT */
+    .install-prompt {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--navy);
+      padding: 16px 20px;
+      display: none;
+      z-index: 200;
+      border-top: 1px solid var(--gold-dim);
+    }
+    
+    .install-prompt.visible {
+      display: block;
+    }
+    
+    .install-text {
+      color: var(--cream);
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    
+    .install-text strong {
+      color: var(--gold);
+    }
+    
+    .install-actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .install-btn {
+      flex: 1;
+      padding: 12px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: none;
+    }
+    
+    .install-btn.primary {
+      background: var(--gold);
+      color: var(--navy);
+    }
+    
+    .install-btn.secondary {
+      background: transparent;
+      border: 1px solid var(--gold-dim);
+      color: var(--gold);
+    }
+    
+    /* MOBILE OPTIMIZATIONS */
+    @media (max-width: 600px) {
+      .summary-grid { grid-template-columns: 1fr; gap: 8px; }
+      .summary-card { display: flex; align-items: center; gap: 16px; text-align: left; padding: 16px; }
+      .summary-icon { margin-bottom: 0; font-size: 24px; }
+      .summary-title { margin-bottom: 4px; }
+      .summary-card > div { flex: 1; }
+      
+      .goal-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .goal-stat { padding: 12px 8px; }
+      .goal-stat-value { font-size: 22px; }
+      
+      .monthly-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+      .month-box { padding: 10px 6px; }
+      .month-name { font-size: 9px; }
+      
+      .schedule-grid { grid-template-columns: 1fr; }
+      
+      .login-box { padding: 32px 24px; }
+      .login-logo { font-size: 24px; letter-spacing: 4px; }
+    }
+    
+    /* LOADING STATE */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+    
+    .loading-overlay.hidden {
+      display: none;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--gold-dim);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- LOADING OVERLAY -->
+  <div class="loading-overlay" id="loading">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- LOGIN SCREEN -->
+  <div class="login-screen" id="login-screen">
+    <div class="login-box">
+      <div class="login-logo">Command</div>
+      <div class="login-subtitle">Strategic Dashboard</div>
+      
+      <input type="password" class="login-input" id="password-input" placeholder="Enter Password" autocomplete="current-password">
+      
+      <label class="remember-me">
+        <input type="checkbox" id="remember-me" checked>
+        <span>Remember this device</span>
+      </label>
+      
+      <button class="login-btn" id="login-btn">Access Dashboard</button>
+      <div class="login-error" id="login-error">Incorrect password</div>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div class="app" id="app">
+    <!-- HEADER -->
+    <header class="header">
+      <div class="logo">Command</div>
+      <div class="header-right">
+        <div class="sync-status" id="sync-status" title="Synced"></div>
+        <button class="logout-btn" id="logout-btn">Logout</button>
+      </div>
+    </header>
+    
+    <!-- NAVIGATION -->
+    <nav class="nav">
+      <button class="nav-btn active" data-view="overview">Overview</button>
+      <button class="nav-btn" data-view="memoir">Memoir</button>
+      <button class="nav-btn" data-view="kaiamara">Kaiamara</button>
+      <button class="nav-btn" data-view="family">Family</button>
+      <button class="nav-btn" data-view="journal">Journal</button>
+    </nav>
+    
+    <div class="container">
+      <!-- OVERVIEW VIEW -->
+      <div id="overview" class="view active">
+        <h2 class="section-title">2026 Big Rocks</h2>
+        
+        <div class="summary-grid">
+          <div class="summary-card" data-view="memoir">
+            <div class="summary-icon">📖</div>
+            <div>
+              <div class="summary-title">Memoir</div>
+              <div class="summary-progress"><div class="summary-progress-fill" id="memoir-summary-progress" style="width: 20%;"></div></div>
+              <div class="summary-stat" id="memoir-summary-stat">1 of 5 milestones</div>
+            </div>
+          </div>
+          
+          <div class="summary-card" data-view="kaiamara">
+            <div class="summary-icon">🏥</div>
+            <div>
+              <div class="summary-title">Kaiamara</div>
+              <div class="summary-progress"><div class="summary-progress-fill" id="kaiamara-summary-progress" style="width: 0%;"></div></div>
+              <div class="summary-stat" id="kaiamara-summary-stat">0 of 50 reservations</div>
+            </div>
+          </div>
+          
+          <div class="summary-card" data-view="family">
+            <div class="summary-icon">👨‍👩‍👧‍👧</div>
+            <div>
+              <div class="summary-title">Family</div>
+              <div class="summary-progress"><div class="summary-progress-fill" id="family-summary-progress" style="width: 8%;"></div></div>
+              <div class="summary-stat" id="family-summary-stat">1 of 12 dad visits</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- WARNING -->
+        <div class="warning-box">
+          <div class="warning-title">⚠️ Hero Pattern Warning Signs</div>
+          <div class="warning-items">
+            <div class="warning-item">Operating roles "temporarily"</div>
+            <div class="warning-item">New idea excitement</div>
+            <div class="warning-item">Rescuer dynamics</div>
+            <div class="warning-item">"Muscling" language</div>
+            <div class="warning-item">Admiration-chasing</div>
+          </div>
+          <div class="warning-quote">"The power to give love was never in other people's hands — it was always in mine."</div>
+        </div>
+        
+        <!-- DAILY SCHEDULE -->
+        <h2 class="section-title">Daily Structure</h2>
+        <div class="schedule-grid">
+          <div class="schedule-block">
+            <div class="schedule-time">6:00 – 7:30 AM</div>
+            <div class="schedule-activity">Family morning</div>
+          </div>
+          <div class="schedule-block">
+            <div class="schedule-time">8:30 – 10:30 AM</div>
+            <div class="schedule-activity">Workout & Sauna</div>
+          </div>
+          <div class="schedule-block">
+            <div class="schedule-time">11:00 AM – 2:00 PM</div>
+            <div class="schedule-activity">Calls & Business</div>
+          </div>
+          <div class="schedule-block">
+            <div class="schedule-time">2:00 – 4:00 PM</div>
+            <div class="schedule-activity">Creative (Memoir)</div>
+          </div>
+          <div class="schedule-block danger">
+            <div class="schedule-time">4:00 PM</div>
+            <div class="schedule-activity">HARD STOP ⛔</div>
+          </div>
+          <div class="schedule-block">
+            <div class="schedule-time">4:30 – 8:30 PM</div>
+            <div class="schedule-activity">Daughter Time</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- MEMOIR VIEW -->
+      <div id="memoir" class="view">
+        <div class="goal-card">
+          <div class="goal-header">
+            <div class="goal-title">📖 Memoir</div>
+            <div class="goal-badge" id="memoir-badge">9%</div>
+          </div>
+          <div class="goal-body">
+            <div class="goal-stats">
+              <div class="goal-stat">
+                <div class="goal-stat-value" id="memoir-complete">1</div>
+                <div class="goal-stat-label">Complete</div>
+              </div>
+              <div class="goal-stat">
+                <div class="goal-stat-value" id="memoir-pending">10</div>
+                <div class="goal-stat-label">Pending</div>
+              </div>
+              <div class="goal-stat">
+                <div class="goal-stat-value" id="memoir-total">11</div>
+                <div class="goal-stat-label">Total</div>
+              </div>
+            </div>
+            
+            <div class="goal-progress-bar">
+              <div class="goal-progress-fill" id="memoir-progress-fill" style="width: 9%;"></div>
+            </div>
+            <div class="goal-progress-text">
+              <span>Progress to Publisher</span>
+              <span id="memoir-progress-pct">9%</span>
+            </div>
+            
+            <h3 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; color: var(--navy); margin: 24px 0 16px;">Key Milestones</h3>
+            <div id="memoir-milestones"></div>
+            
+            <h3 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; color: var(--navy); margin: 24px 0 16px;">Weekly Content Calendar</h3>
+            <p style="font-size: 12px; color: var(--soft-gray); margin-bottom: 16px;">1,500-2,000 word pieces building public persona</p>
+            <div id="weekly-content"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- KAIAMARA VIEW -->
+      <div id="kaiamara" class="view">
+        <div class="goal-card">
+          <div class="goal-header">
+            <div class="goal-title">🏥 Kaiamara</div>
+            <div class="goal-badge" id="kaiamara-badge">0%</div>
+          </div>
+          <div class="goal-body">
+            <div class="goal-stats">
+              <div class="goal-stat">
+                <div class="goal-stat-value" id="kaiamara-reserved">0</div>
+                <div class="goal-stat-label">Reserved</div>
+              </div>
+              <div class="goal-stat">
+                <div class="goal-stat-value" id="kaiamara-revenue">$0</div>
+                <div class="goal-stat-label">Revenue</div>
+              </div>
+              <div class="goal-stat">
+                <div class="goal-stat-value">50</div>
+                <div class="goal-stat-label">Target</div>
+              </div>
+            </div>
+            
+            <div class="goal-progress-bar">
+              <div class="goal-progress-fill" id="kaiamara-progress-fill" style="width: 0%;"></div>
+            </div>
+            <div class="goal-progress-text">
+              <span>Reservations to Goal</span>
+              <span id="kaiamara-progress-pct">0 / 50</span>
+            </div>
+            
+            <h3 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; color: var(--navy); margin: 24px 0 16px;">Launch Roadmap</h3>
+            <div id="launch-roadmap"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- FAMILY VIEW -->
+      <div id="family" class="view">
+        <div class="goal-card">
+          <div class="goal-header">
+            <div class="goal-title">👨‍👩‍👧‍👧 Present Father</div>
+            <div class="goal-badge" id="family-badge">8%</div>
+          </div>
+          <div class="goal-body">
+            <div class="goal-stats">
+              <div class="goal-stat">
+                <div class="goal-stat-value" id="dad-visits-complete">1</div>
+                <div class="goal-stat-label">Dad Visits</div>
+              </div>
+              <div class="goal-stat">
+                <div class="goal-stat-value" id="trips-complete">0</div>
+                <div class="goal-stat-label">Trips Done</div>
+              </div>
+              <div class="goal-stat">
+                <div class="goal-stat-value">12</div>
+                <div class="goal-stat-label">Target</div>
+              </div>
+            </div>
+            
+            <h3 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; color: var(--navy); margin: 24px 0 16px;">Dad Visits — Monthly</h3>
+            <div class="monthly-grid" id="dad-visits-grid"></div>
+            
+            <h3 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; color: var(--navy); margin: 24px 0 16px;">Family Trips</h3>
+            <div id="family-trips"></div>
+            
+            <h3 style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; color: var(--navy); margin: 24px 0 16px;">Romantic Trips with Melody</h3>
+            <div id="romantic-trips"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- JOURNAL VIEW -->
+      <div id="journal" class="view">
+        <div class="journal-card">
+          <div class="journal-date" id="journal-today-date"></div>
+          
+          <label class="journal-label">What happened today?</label>
+          <textarea class="journal-textarea" id="journal-what" placeholder="I had a call with Cait Hoyt. Signed first Kaiamara reservation..."></textarea>
+          
+          <label class="journal-label">How are you feeling? (optional)</label>
+          <textarea class="journal-textarea" id="journal-feeling" style="min-height: 80px;" placeholder="Energized after the meeting. A little anxious about..."></textarea>
+          
+          <button class="journal-btn" id="save-journal">Save Entry</button>
+        </div>
+        
+        <h2 class="section-title">History</h2>
+        <div id="journal-history"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSTALL PROMPT -->
+  <div class="install-prompt" id="install-prompt">
+    <div class="install-text">
+      Add to your home screen for the best experience:<br>
+      Tap <strong>Share</strong> → <strong>Add to Home Screen</strong>
+    </div>
+    <div class="install-actions">
+      <button class="install-btn secondary" id="install-dismiss">Dismiss</button>
+      <button class="install-btn primary" id="install-done">Done</button>
+    </div>
+  </div>
+
+  <!-- FIREBASE -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  
+  <script>
+    // ===== FIREBASE CONFIG =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyCYlmJHcSXaHvMd87Oy7nU-KkLfwWv2fW0",
+      authDomain: "charlie-command-center.firebaseapp.com",
+      databaseURL: "https://charlie-command-center-default-rtdb.firebaseio.com",
+      projectId: "charlie-command-center",
+      storageBucket: "charlie-command-center.firebasestorage.app",
+      messagingSenderId: "449631936194",
+      appId: "1:449631936194:web:6c8d16aabdbdf025c5655b"
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    // ===== PASSWORD PROTECTION =====
+    const CORRECT_PASSWORD_HASH = "5e884898da28047d9"; // Replace with actual hash
+    const AUTH_KEY = 'ce_dashboard_auth';
+    const AUTH_EXPIRY = 365 * 24 * 60 * 60 * 1000; // 1 year
+    
+    function hashPassword(password) {
+      // Simple hash for demo - use proper hashing in production
+      let hash = 0;
+      for (let i = 0; i < password.length; i++) {
+        const char = password.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return hash.toString(16);
+    }
+    
+    function checkAuth() {
+      const auth = localStorage.getItem(AUTH_KEY);
+      if (!auth) return false;
+      
+      try {
+        const data = JSON.parse(auth);
+        if (Date.now() > data.expiry) {
+          localStorage.removeItem(AUTH_KEY);
+          return false;
+        }
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    
+    function setAuth(remember) {
+      const expiry = remember ? Date.now() + AUTH_EXPIRY : Date.now() + (24 * 60 * 60 * 1000);
+      localStorage.setItem(AUTH_KEY, JSON.stringify({ expiry }));
+    }
+    
+    function clearAuth() {
+      localStorage.removeItem(AUTH_KEY);
+    }
+    
+    // ===== DATA =====
+    let data = {
+      memoirMilestones: [
+        { id: 1, label: 'Materials submitted to Cait Hoyt', completed: true },
+        { id: 2, label: 'Vanity Fair Draft 1 (Feb 20)', completed: false },
+        { id: 3, label: 'Chapter draft for Cait meeting (Feb 25)', completed: false },
+        { id: 4, label: 'Cait Hoyt meeting - NYC (Feb 25)', completed: false },
+        { id: 5, label: 'Vanity Fair Draft 2 (Mar 6)', completed: false },
+        { id: 6, label: 'Vanity Fair Draft 3 / Final (Mar 20)', completed: false },
+        { id: 7, label: 'Design weekly content calendar', completed: false },
+        { id: 8, label: 'Vanity Fair delivered to editor (May 10)', completed: false },
+        { id: 9, label: 'Proposal package finalized', completed: false },
+        { id: 10, label: 'Publisher meetings', completed: false },
+        { id: 11, label: 'Deal closed', completed: false }
+      ],
+      weeklyContent: [
+        { id: 1, week: 'Week 1 (Mar 2)', write: false, publish: false },
+        { id: 2, week: 'Week 2 (Mar 9)', write: false, publish: false },
+        { id: 3, week: 'Week 3 (Mar 16)', write: false, publish: false },
+        { id: 4, week: 'Week 4 (Mar 23)', write: false, publish: false },
+        { id: 5, week: 'Week 5 (Mar 30)', write: false, publish: false },
+        { id: 6, week: 'Week 6 (Apr 6)', write: false, publish: false },
+        { id: 7, week: 'Week 7 (Apr 13)', write: false, publish: false },
+        { id: 8, week: 'Week 8 (Apr 20)', write: false, publish: false },
+        { id: 9, week: 'Week 9 (Apr 27)', write: false, publish: false },
+        { id: 10, week: 'Week 10 (May 4)', write: false, publish: false },
+        { id: 11, week: 'Week 11 (May 11)', write: false, publish: false },
+        { id: 12, week: 'Week 12 (May 18)', write: false, publish: false },
+        { id: 13, week: 'Week 13 (May 25)', write: false, publish: false },
+        { id: 14, week: 'Week 14 (Jun 1)', write: false, publish: false },
+        { id: 15, week: 'Week 15 (Jun 8)', write: false, publish: false },
+        { id: 16, week: 'Week 16 (Jun 15)', write: false, publish: false },
+        { id: 17, week: 'Week 17 (Jun 22)', write: false, publish: false },
+        { id: 18, week: 'Week 18 (Jun 29)', write: false, publish: false },
+        { id: 19, week: 'Week 19 (Jul 6)', write: false, publish: false },
+        { id: 20, week: 'Week 20 (Jul 13)', write: false, publish: false }
+      ],
+      launchRoadmap: [
+        { id: 1, label: 'Laurice/Anna sign off on Alex Kaufman deal (Feb 13)', completed: false, category: 'legal' },
+        { id: 2, label: 'Membership agreement finalized (Feb 20)', completed: false, category: 'legal' },
+        { id: 3, label: 'Laurice/Anna meeting - partnership structure (Feb 23, Atlanta)', completed: false, category: 'legal' },
+        { id: 4, label: 'Set up Stripe account', completed: false, category: 'operations' },
+        { id: 5, label: 'Set up bank accounts', completed: false, category: 'legal' },
+        { id: 6, label: 'Sign Josh Glass deal', completed: false, category: 'legal' },
+        { id: 7, label: 'Sign pediatrician to Kaiamara', completed: false, category: 'legal' },
+        { id: 8, label: 'Sign deal with Dr. Cox', completed: false, category: 'legal' },
+        { id: 9, label: 'Acquire insurance', completed: false, category: 'legal' },
+        { id: 10, label: 'Begin sales outreach (Feb 24)', completed: false, category: 'marketing' },
+        { id: 11, label: '🎯 March: 5 reservations ($50K)', completed: false, category: 'milestone' },
+        { id: 12, label: '🎯 March: 10 reservations ($100K)', completed: false, category: 'milestone' },
+        { id: 13, label: '🎯 April: 20 reservations ($200K)', completed: false, category: 'milestone' },
+        { id: 14, label: '🎯 May: 30 reservations ($300K)', completed: false, category: 'milestone' },
+        { id: 15, label: '🎯 June: 40 reservations ($400K)', completed: false, category: 'milestone' },
+        { id: 16, label: '🏆 July: 50 reservations ($500K)', completed: false, category: 'milestone' }
+      ],
+      dadVisits: [
+        { id: 1, month: 'Jan', completed: true },
+        { id: 2, month: 'Feb', completed: false },
+        { id: 3, month: 'Mar', completed: false },
+        { id: 4, month: 'Apr', completed: false },
+        { id: 5, month: 'May', completed: false },
+        { id: 6, month: 'Jun', completed: false },
+        { id: 7, month: 'Jul', completed: false },
+        { id: 8, month: 'Aug', completed: false },
+        { id: 9, month: 'Sep', completed: false },
+        { id: 10, month: 'Oct', completed: false },
+        { id: 11, month: 'Nov', completed: false },
+        { id: 12, month: 'Dec', completed: false }
+      ],
+      familyTrips: [
+        { id: 1, label: 'Baba-Amara Trip (April)', completed: false },
+        { id: 2, label: 'Baba-Kaia Trip', completed: false },
+        { id: 3, label: 'China Trip (June)', completed: false },
+        { id: 4, label: 'Maui Birthday (Dec)', completed: false }
+      ],
+      romanticTrips: [
+        { id: 1, label: 'Bahamas (Jan 29-Feb 1)', completed: false },
+        { id: 2, label: 'Romantic Trip 2', completed: false },
+        { id: 3, label: 'Romantic Trip 3', completed: false }
+      ],
+      reservations: 0,
+      journalEntries: []
+    };
+    
+    let syncTimeout = null;
+    
+    // ===== FIREBASE SYNC =====
+    function setSyncStatus(status) {
+      const el = document.getElementById('sync-status');
+      el.className = 'sync-status ' + status;
+    }
+    
+    function saveToFirebase() {
+      setSyncStatus('syncing');
+      clearTimeout(syncTimeout);
+      
+      syncTimeout = setTimeout(() => {
+        db.ref('dashboard').set(data)
+          .then(() => setSyncStatus(''))
+          .catch(() => setSyncStatus('error'));
+      }, 1000);
+    }
+    
+    function loadFromFirebase() {
+      return db.ref('dashboard').once('value')
+        .then(snapshot => {
+          if (snapshot.exists()) {
+            data = { ...data, ...snapshot.val() };
+          }
+        });
+    }
+    
+    // Listen for realtime updates
+    function listenForUpdates() {
+      db.ref('dashboard').on('value', snapshot => {
+        if (snapshot.exists()) {
+          data = { ...data, ...snapshot.val() };
+          renderAll();
+        }
+      });
+    }
+    
+    // ===== RENDERING =====
+    function renderAll() {
+      renderMemoirMilestones();
+      renderWeeklyContent();
+      renderLaunchRoadmap();
+      renderDadVisits();
+      renderFamilyTrips();
+      renderRomanticTrips();
+      renderJournalHistory();
+      updateStats();
+    }
+    
+    function updateStats() {
+      // Memoir
+      const memoirComplete = data.memoirMilestones.filter(m => m.completed).length;
+      const memoirTotal = data.memoirMilestones.length;
+      const memoirPct = Math.round((memoirComplete / memoirTotal) * 100);
+      
+      // Include weekly content in progress
+      const weeklyComplete = (data.weeklyContent || []).filter(w => w.write && w.publish).length;
+      const weeklyTotal = (data.weeklyContent || []).length;
+      
+      document.getElementById('memoir-summary-progress').style.width = memoirPct + '%';
+      document.getElementById('memoir-summary-stat').textContent = memoirComplete + ' of ' + memoirTotal + ' milestones';
+      document.getElementById('memoir-badge').textContent = memoirPct + '%';
+      document.getElementById('memoir-complete').textContent = memoirComplete;
+      document.getElementById('memoir-pending').textContent = memoirTotal - memoirComplete;
+      document.getElementById('memoir-total').textContent = memoirTotal;
+      document.getElementById('memoir-progress-fill').style.width = memoirPct + '%';
+      document.getElementById('memoir-progress-pct').textContent = memoirPct + '%';
+      
+      // Kaiamara
+      const reserved = data.reservations || 0;
+      const kaiPct = Math.round((reserved / 50) * 100);
+      
+      document.getElementById('kaiamara-summary-progress').style.width = kaiPct + '%';
+      document.getElementById('kaiamara-summary-stat').textContent = reserved + ' of 50 reservations';
+      document.getElementById('kaiamara-badge').textContent = kaiPct + '%';
+      document.getElementById('kaiamara-reserved').textContent = reserved;
+      document.getElementById('kaiamara-revenue').textContent = '$' + (reserved * 10000).toLocaleString();
+      document.getElementById('kaiamara-progress-fill').style.width = kaiPct + '%';
+      document.getElementById('kaiamara-progress-pct').textContent = reserved + ' / 50';
+      
+      // Family
+      const dadComplete = data.dadVisits.filter(d => d.completed).length;
+      const tripsComplete = data.familyTrips.filter(t => t.completed).length + data.romanticTrips.filter(t => t.completed).length;
+      const famPct = Math.round((dadComplete / 12) * 100);
+      
+      document.getElementById('family-summary-progress').style.width = famPct + '%';
+      document.getElementById('family-summary-stat').textContent = dadComplete + ' of 12 dad visits';
+      document.getElementById('family-badge').textContent = famPct + '%';
+      document.getElementById('dad-visits-complete').textContent = dadComplete;
+      document.getElementById('trips-complete').textContent = tripsComplete;
+    }
+    
+    function renderMemoirMilestones() {
+      const container = document.getElementById('memoir-milestones');
+      container.innerHTML = data.memoirMilestones.map(m => `
+        <div class="checklist-item ${m.completed ? 'completed' : ''}" data-type="memoir" data-id="${m.id}">
+          <div class="checklist-checkbox"></div>
+          <div class="checklist-label">${m.label}</div>
+        </div>
+      `).join('');
+      
+      container.querySelectorAll('.checklist-item').forEach(el => {
+        el.addEventListener('click', () => toggleItem('memoirMilestones', parseInt(el.dataset.id)));
+      });
+    }
+    
+    function renderWeeklyContent() {
+      const container = document.getElementById('weekly-content');
+      if (!container) return;
+      
+      const weeks = data.weeklyContent || [];
+      
+      container.innerHTML = weeks.map(w => `
+        <div class="weekly-item ${w.write && w.publish ? 'complete' : ''}" data-id="${w.id}">
+          <div class="weekly-label">${w.week}</div>
+          <div class="weekly-checks">
+            <label class="weekly-check">
+              <input type="checkbox" data-id="${w.id}" data-type="write" ${w.write ? 'checked' : ''}>
+              Write
+            </label>
+            <label class="weekly-check">
+              <input type="checkbox" data-id="${w.id}" data-type="publish" ${w.publish ? 'checked' : ''}>
+              Publish
+            </label>
+          </div>
+        </div>
+      `).join('');
+      
+      container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        cb.addEventListener('change', (e) => {
+          e.stopPropagation();
+          const id = parseInt(e.target.dataset.id);
+          const type = e.target.dataset.type;
+          const week = data.weeklyContent.find(w => w.id === id);
+          if (week) {
+            week[type] = e.target.checked;
+            saveToFirebase();
+            renderWeeklyContent();
+          }
+        });
+      });
+    }
+    
+    function renderLaunchRoadmap() {
+      const container = document.getElementById('launch-roadmap');
+      container.innerHTML = data.launchRoadmap.map(item => `
+        <div class="checklist-item ${item.completed ? 'completed' : ''}" data-type="launch" data-id="${item.id}">
+          <div class="checklist-checkbox"></div>
+          <div class="checklist-label">${item.label}</div>
+          <div class="checklist-category ${item.category}">${item.category}</div>
+        </div>
+      `).join('');
+      
+      container.querySelectorAll('.checklist-item').forEach(el => {
+        el.addEventListener('click', () => toggleItem('launchRoadmap', parseInt(el.dataset.id)));
+      });
+    }
+    
+    function renderDadVisits() {
+      const container = document.getElementById('dad-visits-grid');
+      const currentMonth = new Date().getMonth() + 1;
+      
+      container.innerHTML = data.dadVisits.map(d => `
+        <div class="month-box ${d.completed ? 'completed' : ''} ${d.id === currentMonth ? 'current' : ''}" data-id="${d.id}">
+          <div class="month-name">${d.month}</div>
+          <div class="month-status">${d.completed ? '✓' : '○'}</div>
+        </div>
+      `).join('');
+      
+      container.querySelectorAll('.month-box').forEach(el => {
+        el.addEventListener('click', () => toggleItem('dadVisits', parseInt(el.dataset.id)));
+      });
+    }
+    
+    function renderFamilyTrips() {
+      const container = document.getElementById('family-trips');
+      container.innerHTML = data.familyTrips.map(t => `
+        <div class="checklist-item ${t.completed ? 'completed' : ''}" data-type="family" data-id="${t.id}">
+          <div class="checklist-checkbox"></div>
+          <div class="checklist-label">${t.label}</div>
+        </div>
+      `).join('');
+      
+      container.querySelectorAll('.checklist-item').forEach(el => {
+        el.addEventListener('click', () => toggleItem('familyTrips', parseInt(el.dataset.id)));
+      });
+    }
+    
+    function renderRomanticTrips() {
+      const container = document.getElementById('romantic-trips');
+      container.innerHTML = data.romanticTrips.map(t => `
+        <div class="checklist-item ${t.completed ? 'completed' : ''}" data-type="romantic" data-id="${t.id}">
+          <div class="checklist-checkbox"></div>
+          <div class="checklist-label">${t.label}</div>
+        </div>
+      `).join('');
+      
+      container.querySelectorAll('.checklist-item').forEach(el => {
+        el.addEventListener('click', () => toggleItem('romanticTrips', parseInt(el.dataset.id)));
+      });
+    }
+    
+    function renderJournalHistory() {
+      const container = document.getElementById('journal-history');
+      const entries = data.journalEntries || [];
+      
+      if (entries.length === 0) {
+        container.innerHTML = '<div style="color: var(--soft-gray); text-align: center; padding: 40px;">No journal entries yet</div>';
+        return;
+      }
+      
+      container.innerHTML = entries.slice(0, 20).map(e => {
+        const date = new Date(e.date);
+        return `
+          <div class="journal-entry">
+            <div class="journal-entry-date">${date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</div>
+            <div class="journal-entry-content">${e.what}</div>
+            ${e.feeling ? `<div class="journal-entry-feelings">${e.feeling}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function toggleItem(type, id) {
+      const item = data[type].find(i => i.id === id);
+      if (item) {
+        item.completed = !item.completed;
+        saveToFirebase();
+        renderAll();
+      }
+    }
+    
+    // ===== JOURNAL =====
+    document.getElementById('save-journal').addEventListener('click', () => {
+      const what = document.getElementById('journal-what').value.trim();
+      const feeling = document.getElementById('journal-feeling').value.trim();
+      
+      if (!what) {
+        alert('Please enter what happened today.');
+        return;
+      }
+      
+      if (!data.journalEntries) data.journalEntries = [];
+      
+      data.journalEntries.unshift({
+        date: new Date().toISOString(),
+        what,
+        feeling: feeling || null
+      });
+      
+      if (data.journalEntries.length > 365) {
+        data.journalEntries = data.journalEntries.slice(0, 365);
+      }
+      
+      saveToFirebase();
+      renderJournalHistory();
+      
+      document.getElementById('journal-what').value = '';
+      document.getElementById('journal-feeling').value = '';
+      
+      alert('Journal entry saved!');
+    });
+    
+    // ===== NAVIGATION =====
+    document.querySelectorAll('.nav-btn, .summary-card').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const view = btn.dataset.view;
+        if (!view) return;
+        
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+        
+        document.getElementById(view).classList.add('active');
+        document.querySelector(`.nav-btn[data-view="${view}"]`)?.classList.add('active');
+      });
+    });
+    
+    // ===== LOGIN =====
+    document.getElementById('login-btn').addEventListener('click', () => {
+      const password = document.getElementById('password-input').value;
+      const remember = document.getElementById('remember-me').checked;
+      
+      // For demo: accept any non-empty password
+      // In production: validate against hash
+      if (password === 'Dr3ams') {
+        setAuth(remember);
+        showApp();
+      } else {
+        document.getElementById('login-error').style.display = 'block';
+        document.getElementById('password-input').value = '';
+      }
+    });
+    
+    document.getElementById('password-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') document.getElementById('login-btn').click();
+    });
+    
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      clearAuth();
+      location.reload();
+    });
+    
+    function showApp() {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').classList.add('visible');
+      
+      // Set journal date
+      document.getElementById('journal-today-date').textContent = new Date().toLocaleDateString('en-US', { 
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+      });
+      
+      // Load data and start listening
+      loadFromFirebase()
+        .then(() => {
+          renderAll();
+          listenForUpdates();
+        })
+        .catch(err => {
+          console.error('Firebase load error:', err);
+          renderAll(); // Use default data
+        });
+    }
+    
+    // ===== INSTALL PROMPT =====
+    function showInstallPrompt() {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isStandalone = window.navigator.standalone === true;
+      const dismissed = localStorage.getItem('install_dismissed');
+      
+      if (isIOS && !isStandalone && !dismissed) {
+        document.getElementById('install-prompt').classList.add('visible');
+      }
+    }
+    
+    document.getElementById('install-dismiss').addEventListener('click', () => {
+      localStorage.setItem('install_dismissed', 'true');
+      document.getElementById('install-prompt').classList.remove('visible');
+    });
+    
+    document.getElementById('install-done').addEventListener('click', () => {
+      localStorage.setItem('install_dismissed', 'true');
+      document.getElementById('install-prompt').classList.remove('visible');
+    });
+    
+    // ===== INIT =====
+    document.getElementById('loading').classList.add('hidden');
+    
+    if (checkAuth()) {
+      showApp();
+    } else {
+      document.getElementById('login-screen').style.display = 'flex';
+    }
+    
+    setTimeout(showInstallPrompt, 2000);
+  </script>
+</body>
+</html>
